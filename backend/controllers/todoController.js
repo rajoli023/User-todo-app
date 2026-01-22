@@ -26,32 +26,62 @@ exports.createTodo = async (req, res) => {
 };
 
 // GET user todos
-exports.getTodos = async ( req, res) => {
-    const {filter} = req.query;
-    let query = "SELECT * FROM todos WHERE user_id = ?";
-    let params = [req.user.id];
+exports.getTodos = async (req, res) => {
+  const { filter, search, page = 1, limit = 5 } = req.query;
 
-    if (filter === "today") {
-        query += " AND due_date = CURDATE()";
-    } 
-    if (filter === "upcoming") {
-        query += " AND due_date > CRUDATE() AND completed = false";
-    }
-    if (filter === "completed") {
-        query += " AND completed = true";
-    }
-    if (filter === "pending") {
-        query += " AND completed = false";
-    }
+  const offset = (page - 1) * limit;
 
-    query += "ORDER BY due_date ASC";
+  let query = "SELECT * FROM todos WHERE user_id = ?";
+  let countQuery = "SELECT COUNT(*) as total FROM todos WHERE user_id = ?";
+  let params = [req.user.id];
+  let countParams = [req.user.id];
 
-    try {
-        const [todos] = await db.query(query, params);
-        res.json(todos)
-    } catch (error) {
-        res.status(500).json({message: "Server error", error: error.message});
-    }
+  // Filters
+  if (filter === "today") {
+    query += " AND due_date = CURDATE()";
+    countQuery += " AND due_date = CURDATE()";
+  }
+
+  if (filter === "upcoming") {
+    query += " AND due_date > CURDATE() AND completed = false";
+    countQuery += " AND due_date > CURDATE() AND completed = false";
+  }
+
+  if (filter === "completed") {
+    query += " AND completed = true";
+    countQuery += " AND completed = true";
+  }
+
+  if (filter === "pending") {
+    query += " AND completed = false";
+    countQuery += " AND completed = false";
+  }
+
+  // Search
+  if (search) {
+    query += " AND title LIKE ?";
+    countQuery += " AND title LIKE ?";
+    params.push(`%${search}%`);
+    countParams.push(`%${search}%`);
+  }
+
+  query += " ORDER BY due_date ASC LIMIT ? OFFSET ?";
+  params.push(Number(limit), Number(offset));
+
+  try {
+    const [[countResult]] = await db.query(countQuery, countParams);
+    const [todos] = await db.query(query, params);
+
+    res.json({
+      page: Number(page),
+      limit: Number(limit),
+      total: countResult.total,
+      totalPages: Math.ceil(countResult.total / limit),
+      todos
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
 };
 
 //UPDATE todo
@@ -70,7 +100,7 @@ exports.updateTodo = async ( req, res) => {
     }
 };
 
-//DELET todo
+//DELETE todo
 exports.deleteTodo = async ( req, res) => {
     try{
         await db.query(
