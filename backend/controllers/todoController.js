@@ -1,4 +1,5 @@
 const db = require("../db/db");
+const { success, error } = require("../utils/apiResponse");
 
 
 //Create a new todo
@@ -7,7 +8,7 @@ exports.createTodo = async (req, res) => {
     const userId = req.user.id;
 
     if(!title) {
-        return res.status(400).json({message: "Tile isrequired"});
+        return res.status(400).json({message: "Title is required"});
     }
 
     try {
