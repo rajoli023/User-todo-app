@@ -27,12 +27,28 @@ exports.createTodo = async (req, res) => {
 
 // GET user todos
 exports.getTodos = async ( req, res) => {
+    const {filter} = req.query;
+    let query = "SELECT * FROM todos WHERE user_id = ?";
+    let params = [req.user.id];
+
+    if (filter === "today") {
+        query += " AND due_date = CURDATE()";
+    } 
+    if (filter === "upcoming") {
+        query += " AND due_date > CRUDATE() AND completed = false";
+    }
+    if (filter === "completed") {
+        query += " AND completed = true";
+    }
+    if (filter === "pending") {
+        query += " AND completed = false";
+    }
+
+    query += "ORDER BY due_date ASC";
+
     try {
-        const [todos] = await db.query (
-            "SELECT * FROM todos WHERE user_id = ? ORDER BY due_date ASC",
-            [req.user.id] 
-        );
-        res.json(todos);
+        const [todos] = await db.query(query, params);
+        res.json(todos)
     } catch (error) {
         res.status(500).json({message: "Server error", error: error.message});
     }
@@ -64,5 +80,22 @@ exports.deleteTodo = async ( req, res) => {
         res.json({message: "TODO deleted successfully"});
     } catch (error) {
         res.status(500).json({message: "Server error", error: error.message});  
+    }
+};
+
+//TOGGLE todo status
+
+exports.toggleTodo = async (req, res) => {
+    const {id} = req.params;
+
+    try {
+        await db.query(
+            'UPDATE todos SET completed = NOT completed WHERE id = ? AND user_id = ?',  
+            [id, req.user.id]
+        );
+
+        res.json({message: "Todo status toggled"});
+    } catch (error) {
+        res.status(500).json({message: "Server Error", error: error.message});
     }
 };

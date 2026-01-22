@@ -1,6 +1,7 @@
 const db = require("../db/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 // Register User
 exports.registerUser = async (req, res) => {
     
@@ -15,7 +16,7 @@ exports.registerUser = async (req, res) => {
         // check if user already exists
         const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
-        if (existingUser.lenght>0){
+        if (existingUser.length > 0){
             return res.status(409).json({message: "User already exists"});
         }
 
