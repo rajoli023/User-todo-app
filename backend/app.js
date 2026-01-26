@@ -15,4 +15,7 @@ app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+app.get("/api/auth/test", (req, res) => {
+  res.json({ message : "Backend is connected successfully"});
+});
 module.exports = app;

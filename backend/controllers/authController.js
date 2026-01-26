@@ -1,8 +1,6 @@
 const db = require("../db/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { success, error } = require("../utils/apiResponse");
-
 
 // Register User
 exports.registerUser = async (req, res) => {
