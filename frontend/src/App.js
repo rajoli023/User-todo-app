@@ -1,14 +1,16 @@
-import { use, useEffect } from "react";
-import api from "./api/axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function App() {
-  useEffect(() => {
-    api.get("/auth/test")
-      .then(res => console.log(res.data))
-      .catch(err => console.error(err));
-}, []);
-
-  return <h1>React connected to backend</h1>
+   return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </BrowserRouter>
+  );
 
 }
 
