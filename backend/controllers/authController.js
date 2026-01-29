@@ -25,7 +25,7 @@ exports.registerUser = async (req, res) => {
 
         //Insert new user into database
         await db.query("INSERT INTO users (username, email,password_hash) VALUES (?, ?, ?)", [username, email, hashedPassword]);
-        res.status(201).json({message: "User registered successfully"});
+        res.status(201).json({message: " User registered successfully"});
     } catch (error) {
         res.status(500).json({message: "Server Error", error: error.message});
     }
@@ -36,7 +36,7 @@ exports.loginUser = async (req, res) => {
     const {email, password} = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({message: "All Fields are required"});
+        return res.status(400).json({message: " All Fields are required"});
 
     }
     try {
